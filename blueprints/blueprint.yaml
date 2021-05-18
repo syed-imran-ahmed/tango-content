@@ -1,5 +1,5 @@
 inputs: {}
-version: v3
+version: v5
 resources:
   Salt-VM-0:
     type: Cloud.vSphere.Machine
