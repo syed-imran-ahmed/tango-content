@@ -1,0 +1,28 @@
+inputs: {}
+version: v1
+resources:
+  Salt-VM-0:
+    type: Cloud.vSphere.Machine
+    forceRecreate: true
+    properties:
+      saltConfiguration:
+        masterId: saltstack_enterprise_installer
+        saltEnvironment: sse
+        stateFiles:
+          - /doe.sls
+        variables:
+          user: joe
+      name: e2e-a8n-salt-vm-username-password
+      image: centos72x64
+      flavor: small
+      remoteAccess:
+        authentication: usernamePassword
+        username: '${propgroup.salt_prp_grp.username}'
+        password: '${propgroup.salt_prp_grp.password}'
+      networks:
+        - network: '${resource["Salt-network-0"].id}'
+  Salt-network-0:
+    type: Cloud.Network
+    properties:
+      name: e2e-a8n-salt-network-0
+      networkType: existing
