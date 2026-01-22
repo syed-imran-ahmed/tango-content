@@ -1,33 +1,49 @@
 name: blueprint-1
-version: 6
+version: 7
 formatVersion: 1
 inputs:
-  namespaceName:
-    type: string
-  storageClass:
-    type: string
-  className:
-    type: string
-    default: e2e-small
-  imageName:
-    type: string
+  machineCount:
+    type: integer
+    default: 1
+  towerCount:
+    type: integer
+    default: 1
 resources:
-  CCI_Supervisor_Namespace_1:
-    type: CCI.Supervisor.Namespace
+  Tower-network:
+      type: Cloud.Network
+      properties:
+        name: e2e-a8n-puppet-net
+        networkType: existing
+        constraints:
+          - tag: e2e-a8n-aws-ansible-np
+  CentOS-Ansible:
+    type: Cloud.AWS.EC2.Instance
     properties:
-      name: ${input.namespaceName}
-      existing: true
-  Virtual_Machine_1:
-    type: CCI.Supervisor.Resource
+      name: e2e-a8n-ansiblehost
+      flavor: small
+      image: centos-ansible
+      cloudConfig: |
+        runcmd:
+          - sudo sed -e 's/.*PasswordAuthentication no.*/PasswordAuthentication yes/' -i /etc/ssh/sshd_config
+          - sudo service sshd restart
+      count: '${input.machineCount}'
+      networks:
+        - network: '${resource["Tower-network"].id}'
+          name: '${Tower-network.name}'
+          assignPublicIpAddress: true
+  Tower-Agent:
+    type: Cloud.Ansible.Tower
+    dependsOn:
+      - CentOS-Ansible
     properties:
-      context: ${resource.CCI_Supervisor_Namespace_1.id}
-      manifest:
-        apiVersion: vmoperator.vmware.com/v1alpha2
-        kind: VirtualMachine
-        metadata:
-          name: vm-gr-${env.shortDeploymentId}
-        spec:
-          imageName: ${input.imageName}
-          className: ${input.className}
-          powerState: PoweredOn
-          storageClass: ${input.storageClass}
+      account: e2e-ansible-tower-aws
+      host: '${resource.CentOS-Ansible.*}'
+      hostVariables: '{"e2e_test_host_variable":"/tmp/hello"}'
+      jobTemplates:
+        provision:
+          - ping aws_credentials
+          - install_webserver aws_credentials
+          - ping_with_host_vars aws_credentials
+        de-provision:
+          - ping aws_credentials
+      count: '${input.towerCount}'
