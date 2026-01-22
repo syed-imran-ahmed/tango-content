@@ -1,49 +1,18 @@
 name: blueprint-1
-version: 7
+version: 8
 formatVersion: 1
-inputs:
-  machineCount:
-    type: integer
-    default: 1
-  towerCount:
-    type: integer
-    default: 1
+inputs: {}
 resources:
-  Tower-network:
-      type: Cloud.Network
-      properties:
-        name: e2e-a8n-puppet-net
-        networkType: existing
-        constraints:
-          - tag: e2e-a8n-aws-ansible-np
-  CentOS-Ansible:
-    type: Cloud.AWS.EC2.Instance
+  Cloud_vSphere_Machine_1:
+    type: Cloud.vSphere.Machine
     properties:
-      name: e2e-a8n-ansiblehost
-      flavor: small
-      image: centos-ansible
-      cloudConfig: |
-        runcmd:
-          - sudo sed -e 's/.*PasswordAuthentication no.*/PasswordAuthentication yes/' -i /etc/ssh/sshd_config
-          - sudo service sshd restart
-      count: '${input.machineCount}'
+      image: test
+      cpuCount: 1
+      totalMemoryMB: 1024
       networks:
-        - network: '${resource["Tower-network"].id}'
-          name: '${Tower-network.name}'
-          assignPublicIpAddress: true
-  Tower-Agent:
-    type: Cloud.Ansible.Tower
-    dependsOn:
-      - CentOS-Ansible
+        - network: ${resource.Cloud_NSX_Network_1.id}
+          assignment: static
+  Cloud_NSX_Network_1:
+    type: Cloud.NSX.Network
     properties:
-      account: e2e-ansible-tower-aws
-      host: '${resource.CentOS-Ansible.*}'
-      hostVariables: '{"e2e_test_host_variable":"/tmp/hello"}'
-      jobTemplates:
-        provision:
-          - ping aws_credentials
-          - install_webserver aws_credentials
-          - ping_with_host_vars aws_credentials
-        de-provision:
-          - ping aws_credentials
-      count: '${input.towerCount}'
+      networkType: existing
