@@ -1,62 +1,33 @@
-# Copyright (c) 2025 Broadcom. All Rights Reserved.
-# Broadcom Confidential. The term "Broadcom" refers to Broadcom Inc.
-# and/or its subsidiaries.
 name: blueprint-1
-version: 5
+version: 6
 formatVersion: 1
 inputs:
-  namespace:
+  namespaceName:
     type: string
-  vm-name:
+  storageClass:
     type: string
-  vmg-group-name:
+  className:
     type: string
-    title: VM Group name
+    default: e2e-small
+  imageName:
+    type: string
 resources:
   CCI_Supervisor_Namespace_1:
     type: CCI.Supervisor.Namespace
     properties:
-      name: ${input.namespace}
+      name: ${input.namespaceName}
       existing: true
-  Virtual_Machine_Group_1:
+  Virtual_Machine_1:
     type: CCI.Supervisor.Resource
     properties:
       context: ${resource.CCI_Supervisor_Namespace_1.id}
       manifest:
-        apiVersion: vmoperator.vmware.com/v1alpha5
-        kind: VirtualMachineGroup
-        metadata:
-          name: ${input.vmg-group-name}
-        spec:
-          powerOffMode: TrySoft
-          powerState: PoweredOn
-          suspendMode: TrySoft
-          bootOrder:
-            - members:
-                - kind: VirtualMachine
-                  name: ${input.vm-name}
-      wait:
-        conditions:
-          - type: Ready
-            status: 'True'
-  CCI_Supervisor_Resource_1:
-    type: CCI.Supervisor.Resource
-    properties:
-      context: ${resource.CCI_Supervisor_Namespace_1.id}
-      manifest:
-        apiVersion: vmoperator.vmware.com/v1alpha5
+        apiVersion: vmoperator.vmware.com/v1alpha2
         kind: VirtualMachine
         metadata:
-          name: ${input.vm-name}
-          labels:
-            environment: prod
+          name: vm-gr-${env.shortDeploymentId}
         spec:
-          className: best-effort-xsmall
-          imageName: %s
-          storageClass: %s
+          imageName: ${input.imageName}
+          className: ${input.className}
           powerState: PoweredOn
-          groupName: ${input.vmg-group-name}
-      wait:
-        conditions:
-          - type: VirtualMachineDiskPromotionSynced
-            status: 'True'
+          storageClass: ${input.storageClass}
