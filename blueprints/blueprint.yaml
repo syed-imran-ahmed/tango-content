@@ -1,4 +1,4 @@
-inputs: {}
+name: blueprint-1
 version: v4
 resources:
   Salt-VM-0:
