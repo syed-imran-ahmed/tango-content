@@ -1,5 +1,5 @@
 name: blueprint-1
-version: 9
+version: 10
 formatVersion: 1
 inputs: {}
 resources:
@@ -8,7 +8,7 @@ resources:
     properties:
       image: test
       cpuCount: 1
-      totalMemoryMB: 2048
+      totalMemoryMB: 1024
       networks:
         - network: ${resource.Cloud_NSX_Network_1.id}
           assignment: static
