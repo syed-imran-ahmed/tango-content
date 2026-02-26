@@ -1,18 +1,28 @@
-name: blueprint-1
-version: 10
+name: blueprint 1
+version: v2
 formatVersion: 1
-inputs: {}
+inputs:
+  supervisornamespace-name:
+    type: string
+  storageClass:
+    type: string
 resources:
-  Cloud_vSphere_Machine_1:
-    type: Cloud.vSphere.Machine
+  CCI_Supervisor_Namespace_1:
+    type: CCI.Supervisor.Namespace
     properties:
-      image: test
-      cpuCount: 1
-      totalMemoryMB: 1024
-      networks:
-        - network: ${resource.Cloud_NSX_Network_1.id}
-          assignment: static
-  Cloud_NSX_Network_1:
-    type: Cloud.NSX.Network
+      name: ${input.supervisornamespace-name}
+      existing: true
+  Virtual_Machine_1:
+    type: CCI.Supervisor.Resource
     properties:
-      networkType: existing
+      context: ${resource.CCI_Supervisor_Namespace_1.id}
+      manifest:
+        apiVersion: vmoperator.vmware.com/v1alpha3
+        kind: VirtualMachine
+        metadata:
+          name: virtual-machine-1-${env.shortDeploymentId}
+        spec:
+          imageName: vmi-05cbf8426e8dc91ed
+          className: best-effort-xsmall
+          powerState: PoweredOn
+          storageClass: ${input.storageClass}
