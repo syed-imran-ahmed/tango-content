@@ -1,5 +1,5 @@
 name: blueprint 1
-version: v5
+version: v6
 formatVersion: 1
 inputs:
   supervisornamespace-name:
@@ -24,5 +24,5 @@ resources:
         spec:
           imageName: vmi-05cbf8426e8dc91ed
           className: best-effort-xsmall
-          powerState: PoweredOff
+          powerState: PoweredOn
           storageClass: ${input.storageClass}
